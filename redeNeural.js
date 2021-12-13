@@ -52,7 +52,40 @@ class RedeNeural{
     let gradient = Matrix.hadamard(d_output, output_error);
     gradient = Matrix.escalar_multiply(gradient, this.learning_rate)
   
-    gradient = Matrix.multiply(gradient,hidden_T);
-    gradient.print();
+    this.bias_ho = Matrix.add(this.bias_ho, gradient);
+
+    let weights_ho_deltas = Matrix.multiply(gradient,hidden_T);
+    this.weights_ho = Matrix.add(this.weights_ho, weights_ho_deltas);
+    ////////////////////////////////
+    let weights_ho_T = Matrix.transpose(this.weights_ho);
+    let hidden_error = Matrix.multiply(weights_ho_T, output_error);
+    let d_hidden = Matrix.map(hidden, dsigmoid);
+    let input_T = Matrix.transpose(input);
+
+    let gradient_H = Matrix.hadamard(hidden_error, d_hidden);
+    gradient_H = Matrix.escalar_multiply(gradient_H, this.learning_rate);
+
+    this.bias_ih = Matrix.add(this.bias_ih, gradient_H);
+    let weights_ih_delta = Matrix.multiply(gradient_H, input_T);
+    weights_ih_delta.print();
+    this.weights_ih.print();
+    this.weights_ih = Matrix.add(this.weights_ih, weights_ih_delta);
+  }
+
+  predict(arr){
+    let input = Matrix.arrayToMatrix(arr);
+        
+    let hidden = Matrix.multiply(this.weights_ih,input);
+    hidden = Matrix.add(hidden,this.bias_ih);
+
+    hidden.map(sigmoid);
+
+    //hidden output
+
+    let output = Matrix.multiply(this.weights_ho, hidden);
+    output = Matrix.add(output,this.bias_ho);
+    output.map(sigmoid);
+    output = Matrix.MatrixToArray(output);
+    return output;
   }
 }
